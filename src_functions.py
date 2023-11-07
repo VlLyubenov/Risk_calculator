@@ -2,10 +2,7 @@
 
 # -- Sheet --
 
-from typing import Union, Any
 
-from numpy import ndarray, dtype, floating
-from numpy._typing import _64Bit
 
 
 def var_calc(values, percent):
@@ -136,12 +133,6 @@ def cvar_calc(values, percent):
 
 
 
-def value_at_risk_analysis(values, percent):
-    print("VaR: {}".format(var_calc(values, percent))) 
-    print("CVaR: {}".format(cvar_calc(values, percent)))
-    print("Standard Deviation: {}".format(get_sd(values)))
-    import matplotlib.pyplot as plt
-    return plot_var(values,percent)
 
 #Statistics
 
@@ -234,89 +225,6 @@ def sd_bound_upper(values):
 
     return sd_bound_array
 
-# GARCH VaR
-
-# Require arch packege!!!
-
-#Doesnt work!
-
-def get_garch_var(values, percent):
-    
-    import pandas as pd
-    from arch import arch_model
-    from arch.__future__ import reindexing
-    from numpy.random import normal
-
-    garch= arch_model(values , vol="Garch", p=1, o=0, q=1, dist="Normal")
-    result= garch.fit(update_freq=1)
-    forecasts = result.forecast()
-    cond_mean = forecasts.mean
-    cond_var = forecasts.variance
-    m = float(cond_mean.values) - 100
-    v = float(cond_var.values)
-
-    distribution = normal(m, v , len(values))
-    var_calc(distribution,percent)
 
 
-
-# -- Sheet 2 --
-
-import pandas as pd
-
-def get_SPreturns(csv_file):
-   
-    SP = pd.read_csv(csv_file)
-
-    SPprice = []
-    SPprice = SP["Price"].str.replace(',','')
-    SPprice = SPprice.apply(float)
-    returns = SPprice.pct_change()
-    returns = returns.values
-    returns = list(returns)
-    returns.pop(0)
-    return returns
-
-
-returns = list(get_SPreturns("/data/notebook_files/S&P 500 Historical Data (1).csv"))
-
-value_at_risk_analysis(returns, 0.01)
-
-get_sd(returns)
-
-norm_var(returns, 0.05)
-
-sd_bound_lower(returns)
-
-import pandas as pd
-from arch import arch_model
-from arch.__future__ import reindexing
-from numpy.random import normal
-
-
-full_percent_returns = []
-for i in returns:
-    r = (i +1)*100
-    full_percent_returns.append(r)
-
-garch= arch_model(full_percent_returns , vol="Garch", p=1, o=0, q=1, dist="Normal")
-result= garch.fit(update_freq=1)
-forecasts = result.forecast()
-cond_mean = forecasts.mean
-cond_var = forecasts.variance
-m = float(cond_mean.values) - 100
-v = float(cond_var.values)
-
-distribution = normal(m, v , len(returns))
-var_calc(distribution,0.05)
-
-print(garch_array)
-
-
-
-# -- multivatate_cases --
-
-
-
-get_input()
 
